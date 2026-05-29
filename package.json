@@ -1,0 +1,14 @@
+{
+  "name": "leetcode-autosolver",
+  "version": "1.0.0",
+  "description": "Local browser-companion LeetCode solver",
+  "main": "solve.js",
+  "scripts": {
+    "start": "node solve.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.11.0",
+    "dotenv": "^16.4.5",
+    "playwright": "^1.44.0"
+  }
+}
