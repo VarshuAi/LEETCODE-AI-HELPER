@@ -56,7 +56,7 @@ npm install
 ### Step 2: Configure your Gemini API Key
 Create a `.env` file in the root folder (or edit the existing template) and paste your Gemini Key:
 ```env
-GEMINI_API_KEY=AIzaSyBic7E224vK8efI-U87aq8KthY_-nd-DpI
+GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxhY_-nd-DpI
 ```
 
 ### Step 3: Start the Companion!
