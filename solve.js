@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const readline = require('readline');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -23,6 +24,93 @@ function printHeader() {
   console.log(`${GRAY}Status: Active Background Monitoring Service${RESET}`);
   console.log(`${GRAY}Workspace: ${path.basename(process.cwd())}${RESET}`);
   console.log(`${MAGENTA}${BOLD}====================================================${RESET}\n`);
+}
+
+// Scan Windows filesystem for installed real browsers
+function scanBrowsers() {
+  const localAppData = process.env.LOCALAPPDATA || path.join(process.env.USERPROFILE || 'C:\\Users\\Default', 'AppData', 'Local');
+  const programFiles = process.env.ProgramFiles || 'C:\\Program Files';
+  const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+
+  const candidates = [
+    {
+      name: "Google Chrome",
+      paths: [
+        path.join(programFiles, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+        path.join(localAppData, 'Google', 'Chrome', 'Application', 'chrome.exe')
+      ]
+    },
+    {
+      name: "Microsoft Edge",
+      paths: [
+        path.join(programFilesX86, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+        path.join(programFiles, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+      ]
+    },
+    {
+      name: "Brave Browser",
+      paths: [
+        path.join(programFiles, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'),
+        path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe')
+      ]
+    }
+  ];
+
+  const found = [];
+  for (const item of candidates) {
+    for (const p of item.paths) {
+      if (fs.existsSync(p)) {
+        found.push({ name: item.name, path: p });
+        break; // grab the first found path
+      }
+    }
+  }
+  return found;
+}
+
+// Prompt helper
+function askQuestion(query) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) => rl.question(query, (ans) => {
+    rl.close();
+    resolve(ans.trim());
+  }));
+}
+
+// Browser selection interface
+async function selectBrowser() {
+  const browsers = scanBrowsers();
+  console.log(`${CYAN}${BOLD}====================================================${RESET}`);
+  console.log(`${CYAN}${BOLD}          SELECT YOUR PREFERRED BROWSER             ${RESET}`);
+  console.log(`${CYAN}${BOLD}====================================================${RESET}`);
+  console.log(`We detected the following installed browsers on your PC:\n`);
+  
+  let index = 1;
+  const menuOptions = [];
+  
+  for (const b of browsers) {
+    console.log(` [${index}] ${BOLD}${b.name}${RESET}  ${GRAY}(Real Daily-Use Browser)${RESET}`);
+    menuOptions.push(b);
+    index++;
+  }
+  
+  console.log(` [${index}] ${BOLD}Standard Playwright Chromium${RESET} ${GRAY}(Isolated Sandbox)${RESET}`);
+  console.log(`${CYAN}----------------------------------------------------${RESET}`);
+  
+  const choice = await askQuestion(`${CYAN}Enter your browser choice (1-${index}): ${RESET}`);
+  const choiceNum = parseInt(choice, 10);
+  
+  if (choiceNum >= 1 && choiceNum <= browsers.length) {
+    const selected = browsers[choiceNum - 1];
+    console.log(`\n${GREEN}✔ Loading your real browser binary: ${selected.name}${RESET}\n`);
+    return selected.path;
+  }
+  
+  console.log(`\n${GREEN}✔ Loading default Playwright Chromium.${RESET}\n`);
+  return null; // default
 }
 
 // GraphQL client to fetch problem details from LeetCode
@@ -128,17 +216,27 @@ async function main() {
   // Setup Gemini
   const ai = new GoogleGenerativeAI(apiKey);
 
-  console.log(`${CYAN}Launching headed Chromium browser...${RESET}`);
+  // Let the user pick which browser they want to open!
+  const browserPath = await selectBrowser();
+
+  printHeader();
+  console.log(`${CYAN}Launching browser context...${RESET}`);
   console.log(`${GRAY}Persistent session: ./user_data (login is saved)${RESET}\n`);
 
   const userDataDir = path.join(__dirname, 'user_data');
-  const context = await chromium.launchPersistentContext(userDataDir, {
+  const contextOptions = {
     headless: false,
     defaultViewport: null,
     args: ['--start-maximized'],
     permissions: ['clipboard-read', 'clipboard-write']
-  });
+  };
 
+  // If a real browser was selected, feed its path into Playwright
+  if (browserPath) {
+    contextOptions.executablePath = browserPath;
+  }
+
+  const context = await chromium.launchPersistentContext(userDataDir, contextOptions);
   const page = await context.newPage();
 
   // Expose backend functions to the browser page context
@@ -148,7 +246,7 @@ async function main() {
       console.log(`${MAGENTA}${BOLD}[API Request]${RESET} In-browser action triggered: ${BOLD}${action.toUpperCase()}${RESET}`);
       console.log(`${GRAY}Problem Slug: ${slug} | Language: ${langName}${RESET}`);
 
-      // 1. Fetch clean problem data from LeetCode GraphQL
+      // Fetch clean problem data from LeetCode GraphQL
       const question = await fetchLeetCodeQuestion(slug);
       const targetLang = mapLanguage(langName);
       
@@ -161,7 +259,6 @@ async function main() {
 
       let prompt = "";
       if (action === "solve") {
-        console.log(`${CYAN}Routing to Autosolver...${RESET}`);
         prompt = `
         You are a world-class software engineer and competitive programmer.
         Solve this LeetCode challenge using the optimal time and space complexity algorithm.
@@ -185,7 +282,6 @@ async function main() {
         5. Output ONLY the raw executable code that is ready to paste directly into the editor. No explanations, no markdown blocks, no prefix/suffix text.
         `;
       } else {
-        console.log(`${CYAN}Routing to Pedagogical Co-pilot Mentor...${RESET}`);
         prompt = `
         You are a supportive, friendly, and expert computer science professor and coding mentor.
         Your goal is to guide the user to solve this LeetCode problem themselves.
@@ -204,12 +300,12 @@ async function main() {
         INSTRUCTIONS FOR YOUR FEEDBACK:
         Provide a highly engaging, constructive review structured into these sections using simple plain text or standard HTML formatting:
         
-        1. 🔍 **Approach Check**: Gently evaluate if their structural choice (e.g. Hashmap, dynamic programming, two pointers) is heading in the right direction. Suggest alternative paths if they are stuck.
-        2. 🐛 **Bug Hunt**: Highlight any logical flaws, syntax errors, or missed edge cases in their current code. Do not give the corrected code, just explain the bug (e.g., "On line 5, you are out of index bounds because...").
-        3. 💡 **Next Steps & Hints**: Provide 1 or 2 small, progressive, leading hints or questions to nudge them toward writing the next lines. Keep it encouraging!
+        1. 🔍 **Approach Check**: Gently evaluate if their structural choice (e.g. Hashmap, two pointers) is heading in the right direction. Suggest alternative paths if they are stuck.
+        2. 🐛 **Bug Hunt**: Highlight any logical flaws, syntax errors, or missed edge cases in their current code. Do not give the corrected code, just explain the bug.
+        3. 💡 **Next Steps & Hints**: Provide 1 or 2 small, progressive hints to nudge them toward writing the next lines.
         4. ⚡ **Complexity Check**: Summarize the space-time target (e.g., "We are aiming for O(N) time complexity").
         
-        Keep your tone supportive, clean, and highly educational. Avoid long paragraphs; use concise bullet points.
+        Keep your tone supportive, clean, and highly educational. Use concise bullet points.
         `;
       }
 
@@ -232,14 +328,11 @@ async function main() {
   const injectSidebar = async (p) => {
     try {
       await p.evaluate(() => {
-        // Background loop that constantly checks if we are on a LeetCode problem page
-        // and mounts the custom widget if it's missing. Works perfectly for Single Page Apps!
         if (window.aiCompanionInterval) return;
 
         window.aiCompanionInterval = setInterval(() => {
           const isProblemPage = window.location.pathname.includes('/problems/');
           if (!isProblemPage) {
-            // Remove widget if navigating away from problems
             const existing = document.querySelector('ai-companion-widget');
             if (existing) existing.remove();
             return;
@@ -247,14 +340,11 @@ async function main() {
 
           if (document.querySelector('ai-companion-widget')) return;
 
-          // Create the custom container element
           const widget = document.createElement('ai-companion-widget');
           document.body.appendChild(widget);
 
-          // Create isolated Shadow DOM
           const shadow = widget.attachShadow({ mode: 'open' });
 
-          // Inject gorgeous premium glassmorphic CSS
           const style = document.createElement('style');
           style.textContent = `
             :host {
@@ -355,7 +445,6 @@ async function main() {
             }
             .tab.active {
               color: #a78bfa;
-              border-bottom-2px-solid: #a78bfa; /* Wait, using border-bottom instead */
               border-bottom: 2px solid #a78bfa;
               background: rgba(255, 255, 255, 0.02);
             }
@@ -514,7 +603,6 @@ async function main() {
             </div>
 
             <div class="content-area">
-              <!-- Mentor Mode Panel -->
               <div class="tab-panel active" id="panel-copilot">
                 <button class="btn-action btn-copilot" id="action-copilot">
                   🧠 Analyze My Code & Get Hint
@@ -528,7 +616,6 @@ async function main() {
                 </div>
               </div>
 
-              <!-- Autosolve Panel -->
               <div class="tab-panel" id="panel-autosolve">
                 <button class="btn-action btn-autosolve" id="action-autosolve">
                   🚀 Autosolve & Paste Code
@@ -571,7 +658,6 @@ async function main() {
             });
           });
 
-          // Scrape code from Monaco Editor on page
           const getEditorCode = () => {
             try {
               if (window.monaco && window.monaco.editor) {
@@ -586,7 +672,6 @@ async function main() {
             return "";
           };
 
-          // Detect active coding language from LeetCode UI
           const getEditorLanguage = () => {
             const languages = [
               "C++", "Java", "Python", "Python3", "C", "C#", "JavaScript", 
@@ -603,7 +688,6 @@ async function main() {
             return "Python3";
           };
 
-          // Helper to format AI response as neat HTML inside our sidebar
           const formatFeedback = (text) => {
             return text
               .replace(/\n/g, '<br>')
@@ -627,7 +711,6 @@ async function main() {
               const lang = getEditorLanguage();
               const slug = window.location.pathname.split('/')[2];
 
-              // Call exposed backend Node bridge
               const response = await window.bridgeCallGemini("guide", currentCode, slug, lang);
               
               if (response.success) {
@@ -660,11 +743,9 @@ async function main() {
               const lang = getEditorLanguage();
               const slug = window.location.pathname.split('/')[2];
 
-              // Call exposed backend Node bridge
               const response = await window.bridgeCallGemini("solve", "", slug, lang);
               
               if (response.success) {
-                // Safely write code to Monaco Editor in LeetCode page context!
                 let injectSuccess = false;
                 if (window.monaco && window.monaco.editor) {
                   const editors = window.monaco.editor.getEditors();
@@ -713,8 +794,6 @@ async function main() {
   });
 
   await page.goto('https://leetcode.com/problemset/');
-  
-  // Initial injection
   await injectSidebar(page);
 
   printHeader();
