@@ -92,12 +92,12 @@ async function selectBrowser() {
   const menuOptions = [];
   
   for (const b of browsers) {
-    console.log(` [${index}] ${BOLD}${b.name}${RESET}  ${GRAY}(Real Daily-Use Browser)${RESET}`);
+    console.log(" [" + index + "] " + BOLD + b.name + RESET + "  " + GRAY + "(Real Daily-Use Browser)" + RESET);
     menuOptions.push(b);
     index++;
   }
   
-  console.log(` [${index}] ${BOLD}Standard Playwright Chromium${RESET} ${GRAY}(Isolated Sandbox)${RESET}`);
+  console.log(" [" + index + "] " + BOLD + "Standard Playwright Chromium" + RESET + " " + GRAY + "(Isolated Sandbox)" + RESET);
   console.log(`${CYAN}----------------------------------------------------${RESET}`);
   
   const choice = await askQuestion(`${CYAN}Enter your browser choice (1-${index}): ${RESET}`);
@@ -224,10 +224,19 @@ async function main() {
   console.log(`${GRAY}Persistent session: ./user_data (login is saved)${RESET}\n`);
 
   const userDataDir = path.join(__dirname, 'user_data');
+  
+  // HIGH-STEALTH OPTIONS: Disables automation controls and hides webdriver flags 
+  // so LeetCode never detects automated browsers or blocks access!
   const contextOptions = {
     headless: false,
     defaultViewport: null,
-    args: ['--start-maximized'],
+    args: [
+      '--start-maximized',
+      '--disable-blink-features=AutomationControlled', // Hides navigator.webdriver!
+      '--disable-infobars',
+      '--no-sandbox'
+    ],
+    ignoreDefaultArgs: ['--enable-automation'], // Removes automation overlay banners!
     permissions: ['clipboard-read', 'clipboard-write']
   };
 
@@ -237,6 +246,14 @@ async function main() {
   }
 
   const context = await chromium.launchPersistentContext(userDataDir, contextOptions);
+  
+  // Stealth script to run on page creation to double-verify navigator.webdriver is false
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => false,
+    });
+  });
+
   const page = await context.newPage();
 
   // Expose backend functions to the browser page context
@@ -338,6 +355,9 @@ async function main() {
             return;
           }
 
+          // Safety Check: Wait until document.body is fully ready before appending!
+          if (!document.body) return;
+
           if (document.querySelector('ai-companion-widget')) return;
 
           const widget = document.createElement('ai-companion-widget');
@@ -359,18 +379,18 @@ async function main() {
               height: 56px;
               border-radius: 50%;
               background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-              box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+              box-shadow: 0 4px 24px rgba(139, 92, 246, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3);
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              z-index: 999999;
+              z-index: 2147483647; /* Set to absolute max z-index so it floats above video players! */
               transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
               border: 2px solid rgba(255, 255, 255, 0.2);
             }
             .floating-trigger:hover {
               transform: scale(1.15) rotate(15deg);
-              box-shadow: 0 6px 24px rgba(139, 92, 246, 0.7);
+              box-shadow: 0 6px 28px rgba(139, 92, 246, 0.8);
             }
             .floating-trigger svg {
               width: 28px;
@@ -383,12 +403,12 @@ async function main() {
               right: 0;
               width: 380px;
               height: 100vh;
-              background: rgba(10, 12, 22, 0.85);
-              backdrop-filter: blur(20px);
-              -webkit-backdrop-filter: blur(20px);
-              box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
-              border-left: 1px solid rgba(139, 92, 246, 0.3);
-              z-index: 999998;
+              background: rgba(10, 12, 22, 0.9);
+              backdrop-filter: blur(25px);
+              -webkit-backdrop-filter: blur(25px);
+              box-shadow: -5px 0 35px rgba(0, 0, 0, 0.6);
+              border-left: 1px solid rgba(139, 92, 246, 0.4);
+              z-index: 2147483646; /* One below trigger but above all page elements! */
               transform: translateX(100%);
               transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
               display: flex;
@@ -419,7 +439,8 @@ async function main() {
               border: none;
               color: #94a3b8;
               cursor: pointer;
-              font-size: 20px;
+              font-size: 25px;
+              line-height: 1;
               transition: color 0.2s;
             }
             .close-btn:hover {
