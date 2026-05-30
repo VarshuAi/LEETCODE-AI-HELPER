@@ -1,35 +1,32 @@
-# Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.project
-.directory
+# Node modules
+node_modules/
 
-# IntelliJ
-.idea/
-*.iml
-*.ipr
-*.iws
+# Expo directories
+.expo/
+dist/
+web-build/
 
-# Visual Studio Code
-.vscode/
-
-# Flutter/Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-/build/
-
-# Android
+# Android generated files
 .gradle/
 local.properties
 *.keystore
 *.jks
+android/build/
+android/app/build/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.suo
+*.sln
+*.sw?
+.DS_Store
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
