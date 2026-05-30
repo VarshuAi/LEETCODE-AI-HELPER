@@ -1,96 +1,89 @@
-# 🧠 LeetCode AI Companion & Co-Pilot
+# 🖤 Chronos: Premium Matte Carbon Focus Launcher
 
-> A premium, zero-friction local browser companion that injects a gorgeous, interactive AI Sidepanel directly into the LeetCode website itself. 
+> A premium, minimalist carbon-slate Home Screen Replacement (Launcher) for Android developed by **Varshan** using **Flutter** and native **Kotlin MethodChannels**!
 
-Minimize your terminal and stay focused on your browser. This tool runs silently in the background, rendering a stunning glassmorphic AI Companion sidebar directly inside LeetCode so you can autosolve challenges or get guided hints in real-time as you code!
-
----
-
-## ✨ Features
-
-- **📺 100% In-Browser Interaction**: Once launched, the terminal is completely minimized. You control the AI, read hints, and inject code directly inside LeetCode via our custom floating companion widget.
-- **🧠 Interactive AI Co-Pilot (Mentor Mode)**: Stuck on a problem? Toggle the **Mentor Tab** and click *Analyze My Code*. The AI reads your current LeetCode editor, reviews your logic, identifies bugs, and prints step-by-step guidance and hints on your screen—**without spoiling the final solution**.
-- **🚀 One-Click Autosolver**: Short on time? Click *Autosolve & Paste*. Gemini 3.5 will immediately analyze the problem, craft the optimal space-time complexity solution, and write it directly into LeetCode's Monaco Editor in milliseconds.
-- **🧬 Isolated Shadow DOM Injector**: The entire UI companion is mounted inside an isolated Shadow Root. This guarantees that our styling will **never** conflict with LeetCode's UI, and LeetCode's internal style modifications will never break our widget.
-- **💾 Persistent Sessions**: Launches your browser using a persistent Chrome profile. **Log in once**, and you remain logged in for every subsequent session.
-- **🔒 100% Secure & Local**: All credentials, LeetCode session cookies, and API keys are stored locally on your PC. No data is ever transmitted to third-party tracking services.
+Minimize digital clutter and focus on daily styling. Chronos is built for high-performance gestural routine tracking, background atmospheric lofi audio mixing, and minimalist neomorphic dials.
 
 ---
 
-## 🧭 System Architecture
+## ✨ Design Philosophy & Aesthetics
 
-The companion combines a high-speed local Node.js process with headless browser control, binding secure background API tunnels straight into LeetCode's execution thread:
+* **Carbon Neumorphic Dial**: The central hub features a ticking custom-painted analog clock with deep shadow offsets and an active crimson second hand.
+* **Fuzzy App Search Drawer**: Swiping up launches a local, sub-3ms fuzzy-search engine that queries, filters, and launches installed Android packages directly.
+* **Swipe Gestural Routines (Swipe Right)**: Accesses your daily checklists and performance metrics, backed by a persistent SQLite database.
+* **Multi-Channel Lofi Mixing Deck (Swipe Left)**: Synthesizes three high-fidelity local focus sound loops (Rain, Deep Synth, Mellow Piano) with interactive slider mixing, plus a focus stopwatch to track study/deep-work blocks.
 
-```mermaid
-sequenceDiagram
-    participant User as Browser Screen
-    participant Sidebar as AI Companion Sidebar (Shadow DOM)
-    participant Bridge as Playwright Bridge (Exposed Node Context)
-    participant GraphQL as LeetCode GraphQL API
-    participant Gemini as Gemini 3.5 API (Local Key)
+---
 
-    User->>Sidebar: Click "🧠 Analyze My Code"
-    Sidebar->>Bridge: bridgeCallGemini("guide", activeCode, activeSlug, activeLang)
-    Bridge->>GraphQL: Query problem details, stubs & constraints
-    GraphQL-->>Bridge: Return clean structured metadata
-    Bridge->>Gemini: Request pedagogical hints (no code spoilers)
-    Gemini-->>Bridge: Return constructive bug analysis & next steps
-    Bridge-->>Sidebar: Return formatted results
-    Sidebar->>User: Render gorgeous glassmorphic review on LeetCode screen
+## 🧭 Technical Architecture & MethodChannels
+
+```
+[Flutter UI Layout (Dart)] 
+         │
+         ▼  (MethodChannel: "com.varshan.chronos/apps")
+[MainActivity.kt (Native Kotlin)]
+         │
+         ├──► getInstalledApps() -> Returns mapped list of App Name & Package Name
+         └──► launchApp(packageName) -> Spawns launch intent via PackageManager
+```
+
+### 📂 Directory Structure
+
+```
+C:\Users\Varshan\Documents\antigravity\magical-hypatia\
+├── pubspec.yaml              # Flutter dependencies & Assets declarations
+├── assets/
+│   └── audio/                # Local focus MP3 loops (27MB+)
+│       ├── rain_lofi.mp3
+│       ├── deep_synth.mp3
+│       └── mellow_piano.mp3
+├── android/app/src/main/
+│   ├── AndroidManifest.xml   # HOME category intent-filter setup
+│   └── kotlin/com/varshan/chronos_launcher/
+│       └── MainActivity.kt   # Native Kotlin MethodChannel (Apps loader)
+└── lib/
+    ├── main.dart             # Tab-router, Gestural page swipes, and overlay styling
+    ├── database/
+    │   └── db_helper.dart    # SQLite routine planner & metrics tracker
+    └── screens/
+        ├── home_screen.dart  # Minimalist dial clock & fuzzy search apps drawers
+        ├── dashboard.dart    # Daily checklists & weekly focus bar charts
+        └── mixer.dart        # Background audio loops deck & focus stopwatch
 ```
 
 ---
 
-## 🚀 Installation & Launch
+## 🚀 Setup & Compile Guidelines
+
+To load, build, and run **Chronos Launcher** on your Android device:
 
 ### Prerequisites
-- Make sure you have [**Node.js (v18+)**](https://nodejs.org/) installed on your machine.
-- Get a free Gemini API Key from **[Google AI Studio](https://aistudio.google.com/)**.
+* [Flutter SDK](https://docs.flutter.dev/get-started/install) installed.
+* [Android SDK](https://developer.android.com/studio) configured (default path: `C:\Users\Varshan\AppData\Local\Android\Sdk`).
 
 ### Step 1: Install Dependencies
-Open your terminal in the repository folder and run:
+Open your terminal in the project directory and run:
 ```bash
-npm install
+flutter pub get
 ```
 
-### Step 2: Configure your Gemini API Key
-Create a `.env` file in the root folder (or edit the existing template) and paste your Gemini Key:
-```env
-GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxhY_-nd-DpI
-```
+### Step 2: Run and Compile
+1. Connect your Android device or start an emulator.
+2. Build and run the app in debug mode:
+   ```bash
+   flutter run
+   ```
+3. To build a premium production release APK, execute:
+   ```bash
+   flutter build apk --release
+   ```
 
-### Step 3: Start the Companion!
-Launch the browser bridge by executing:
-```bash
-npm start
-```
+### Step 3: Register as Default Launcher
+1. Open **Settings** on your Android device.
+2. Search for **Default Home App**.
+3. Select **Chronos** as your default launcher.
+4. Press the Home button and enjoy the premium Carbon Slate layout!
 
 ---
 
-## 🎮 How to Use It
-
-1. **Log in to LeetCode**: When the browser window launches, log into your LeetCode account.
-2. **Navigate to any Problem**: Go to any problem (e.g. `https://leetcode.com/problems/two-sum/`).
-3. **Open the Sidepanel**:
-   - You will see a glowing, pulsing deep-purple circular button floating in the bottom-right corner of LeetCode.
-   - Click it to slide in the gorgeous glassmorphic AI Sidepanel.
-4. **🧠 Use Co-Pilot Mentor**:
-   - Write some partial or buggy code in the LeetCode editor.
-   - Click **Analyze My Code & Get Hint**.
-   - Review the detailed feedback detailing your bugs, approach checks, and next steps right on the screen.
-5. **🚀 Use Autosolve**:
-   - Go to the **Autosolve** tab in the sidebar.
-   - Click **Autosolve & Paste Code** to instantly inject the optimized solution straight into your editor!
-
----
-
-## 📁 Project Structure
-
-- `solve.js`: The backend automation manager and Playwright context orchestrator.
-- `package.json`: Manages scripts and Node packages (`playwright`, `@google/generative-ai`, `dotenv`).
-- `.env`: Stores your local credentials safely.
-- `user_data/`: Local folder storing your browser persistent cache, cookies, and login session.
-
----
-
-*Enjoy a premium, hands-free LeetCode learning companion. Happy coding! 🚀*
+*Designed and developed with care by **Varshan**. Elevate your focus. 🚀*
