@@ -48,11 +48,18 @@ async function handleRequest(request) {
     \`\`\`
 
     INSTRUCTIONS:
-    1. Write the complete, high-performance production-grade solution.
-    2. Ensure it strictly fits into the starter template without changing class, function, or parameter names.
-    3. Include minimal, clean comments explaining critical logic segments.
-    4. DO NOT wrap the code in markdown blocks like \`\`\`${request.lang}.
-    5. Output ONLY the raw executable code that is ready to paste directly into the editor. No explanations, no markdown blocks, no prefix/suffix text.
+    1. Write the absolute fastest, most memory-efficient solution that will achieve "Beats 100%" or top performance metrics on LeetCode.
+    2. If the language is C++, include a fast I/O block at the very top of the solution (outside the class definition) to optimize stream performance, like:
+       auto init = []() {
+           std::ios_base::sync_with_stdio(false);
+           std::cin.tie(NULL);
+           return 0;
+       }();
+    3. If the language is Java, use fast input reader techniques if appropriate, and keep object allocations to an absolute minimum.
+    4. Optimize the algorithm's constant factors (e.g. using pre-allocated arrays instead of dynamically resizing lists, bitwise optimizations, in-place updates, unrolling simple loops) so it gets the absolute maximum speed.
+    5. Ensure it strictly fits into the starter template without changing class, function, or parameter names.
+    6. DO NOT wrap the code in markdown blocks like \`\`\`${request.lang}.
+    7. Output ONLY the raw executable code that is ready to paste directly into the editor. No explanations, no markdown blocks, no prefix/suffix text.
     `;
   } else {
     prompt = `
