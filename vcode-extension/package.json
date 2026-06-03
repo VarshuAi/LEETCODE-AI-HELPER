@@ -1,7 +1,7 @@
 {
-  "name": "vcode-companion",
-  "displayName": "VCode Companion",
-  "description": "Varshan's Custom VCode Environment: macOS/Carbon Themes, Antigravity AI Chat Sidebar, and Custom Welcome Page.",
+  "name": "antigravity-ide-companion",
+  "displayName": "Antigravity IDE Companion",
+  "description": "Varshan's Custom Antigravity IDE Environment: macOS/Carbon Themes, Antigravity AI Chat Sidebar, and Custom Welcome Page.",
   "version": "1.0.0",
   "publisher": "varshuai",
   "engines": {
@@ -19,12 +19,12 @@
   "contributes": {
     "themes": [
       {
-        "label": "VCode Carbon Slate",
+        "label": "Antigravity Carbon Slate",
         "uiTheme": "vs-dark",
         "path": "./themes/vcode-carbon-slate.json"
       },
       {
-        "label": "VCode macOS Dark",
+        "label": "Antigravity macOS Dark",
         "uiTheme": "vs-dark",
         "path": "./themes/vcode-macos-dark.json"
       }
@@ -32,16 +32,16 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "vcode-sidebar",
+          "id": "antigravity-sidebar",
           "title": "Antigravity AI",
           "icon": "media/vcode-icon.svg"
         }
       ]
     },
     "views": {
-      "vcode-sidebar": [
+      "antigravity-sidebar": [
         {
-          "id": "vcode-gemini-chat",
+          "id": "antigravity-gemini-chat",
           "type": "webview",
           "name": "Antigravity AI Assistant"
         }
@@ -49,36 +49,36 @@
     },
     "commands": [
       {
-        "command": "vcode.openWelcome",
-        "title": "VCode: Open Welcome Page",
-        "category": "VCode"
+        "command": "antigravity.openWelcome",
+        "title": "Antigravity IDE: Open Welcome Page",
+        "category": "Antigravity"
       },
       {
-        "command": "vcode.configureApiKey",
-        "title": "VCode: Configure Gemini API Key",
-        "category": "VCode"
+        "command": "antigravity.configureApiKey",
+        "title": "Antigravity IDE: Configure Gemini API Key",
+        "category": "Antigravity"
       },
       {
-        "command": "vcode.applyTheme",
-        "title": "VCode: Apply Carbon Slate Theme",
-        "category": "VCode"
+        "command": "antigravity.applyTheme",
+        "title": "Antigravity IDE: Apply Carbon Slate Theme",
+        "category": "Antigravity"
       },
       {
-        "command": "vcode.applyMacTheme",
-        "title": "VCode: Apply macOS Dark Theme",
-        "category": "VCode"
+        "command": "antigravity.applyMacTheme",
+        "title": "Antigravity IDE: Apply macOS Dark Theme",
+        "category": "Antigravity"
       }
     ],
     "configuration": {
-      "title": "VCode Settings",
+      "title": "Antigravity IDE Settings",
       "properties": {
-        "vcode.geminiApiKey": {
+        "antigravity.geminiApiKey": {
           "type": "string",
           "default": "",
           "description": "Your Google Gemini API Key for Antigravity AI Chat Assistant.",
           "scope": "application"
         },
-        "vcode.geminiModel": {
+        "antigravity.geminiModel": {
           "type": "string",
           "default": "gemini-3.5-flash",
           "enum": [

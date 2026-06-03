@@ -31,7 +31,7 @@ class SidebarProvider {
                     await this._handleSendMessage(data.text, data.includeCode);
                     break;
                 case 'configureApiKey':
-                    vscode.commands.executeCommand('vcode.configureApiKey');
+                    vscode.commands.executeCommand('antigravity.configureApiKey');
                     break;
                 case 'insertCode':
                     this._insertCodeIntoEditor(data.code);
@@ -51,7 +51,7 @@ class SidebarProvider {
     async _handleSendMessage(userPrompt, includeCode) {
         if (!this._view) return;
 
-        const config = vscode.workspace.getConfiguration('vcode');
+        const config = vscode.workspace.getConfiguration('antigravity');
         const apiKey = config.get('geminiApiKey');
         const model = config.get('geminiModel') || 'gemini-3.5-flash';
 
@@ -170,7 +170,7 @@ class SidebarProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VCode Gemini AI</title>
+    <title>Antigravity AI</title>
     <link rel="stylesheet" href="${cssUri}">
 </head>
 <body>
@@ -201,7 +201,7 @@ class SidebarProvider {
                 </label>
             </div>
             <div class="input-row">
-                <textarea id="txt-prompt" placeholder="Ask Gemini... (Ctrl+Enter to send)"></textarea>
+                <textarea id="txt-prompt" placeholder="Ask Antigravity... (Ctrl+Enter to send)"></textarea>
                 <button class="send-btn" id="btn-send">
                     <svg viewBox="0 0 24 24" width="18" height="18">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>

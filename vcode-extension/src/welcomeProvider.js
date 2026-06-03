@@ -19,8 +19,8 @@ class WelcomeProvider {
 
         // Create a new webview panel
         this.panel = vscode.window.createWebviewPanel(
-            'vcodeWelcome',
-            'Welcome to VCode',
+            'antigravityWelcome',
+            'Welcome to Antigravity IDE',
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -37,16 +37,16 @@ class WelcomeProvider {
         this.panel.webview.onDidReceiveMessage(message => {
             switch (message.command) {
                 case 'applyTheme':
-                    vscode.commands.executeCommand('vcode.applyTheme');
+                    vscode.commands.executeCommand('antigravity.applyTheme');
                     break;
                 case 'applyMacTheme':
-                    vscode.commands.executeCommand('vcode.applyMacTheme');
+                    vscode.commands.executeCommand('antigravity.applyMacTheme');
                     break;
                 case 'configureApiKey':
-                    vscode.commands.executeCommand('vcode.configureApiKey');
+                    vscode.commands.executeCommand('antigravity.configureApiKey');
                     break;
                 case 'openChat':
-                    vscode.commands.executeCommand('workbench.view.extension.vcode-sidebar');
+                    vscode.commands.executeCommand('workbench.view.extension.antigravity-sidebar');
                     break;
             }
         });
@@ -76,7 +76,7 @@ class WelcomeProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to VCode</title>
+    <title>Welcome to Antigravity IDE</title>
     <link rel="stylesheet" href="${cssUri}">
 </head>
 <body>
@@ -88,9 +88,9 @@ class WelcomeProvider {
     <div class="container">
         <div class="welcome-card">
             <header class="welcome-header">
-                <img src="${iconUri}" class="logo" alt="VCode Logo" />
-                <h1 class="title">VCode</h1>
-                <p class="subtitle">Personalized Workspace by Varshan</p>
+                <img src="${iconUri}" class="logo" alt="Antigravity IDE Logo" />
+                <h1 class="title">Antigravity IDE</h1>
+                <p class="subtitle">Personalized Workspace for Varshan</p>
                 <div class="divider"></div>
             </header>
 
@@ -106,8 +106,8 @@ class WelcomeProvider {
 
                 <!-- AI Sidebar Card -->
                 <div class="card card-ai">
-                    <div class="card-icon">🤖</div>
-                    <h2>Gemini Assistant</h2>
+                    <div class="card-icon">👾</div>
+                    <h2>Antigravity AI</h2>
                     <p>Directly chat with Google's Gemini models in your sidebar for instant explanations and coding co-piloting.</p>
                     <button class="btn btn-secondary" id="btn-chat">Open Chat Sidebar</button>
                 </div>
@@ -122,7 +122,7 @@ class WelcomeProvider {
             </main>
 
             <footer class="welcome-footer">
-                <p>Use the Command Palette (<span>Ctrl+Shift+P</span>) and search for "VCode" to open this page at any time.</p>
+                <p>Use the Command Palette (<span>Ctrl+Shift+P</span>) and search for "Antigravity" to open this page at any time.</p>
             </footer>
         </div>
     </div>
