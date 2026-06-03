@@ -53,7 +53,7 @@ class SidebarProvider {
 
         const config = vscode.workspace.getConfiguration('vcode');
         const apiKey = config.get('geminiApiKey');
-        const model = config.get('geminiModel') || 'gemini-1.5-flash';
+        const model = config.get('geminiModel') || 'gemini-3.5-flash';
 
         if (!apiKey) {
             this._view.webview.postMessage({
