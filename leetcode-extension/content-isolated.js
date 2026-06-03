@@ -2,6 +2,23 @@
 
 if (!window.aiCompanionInterval) {
   window.aiCompanionInterval = setInterval(() => {
+    // Check if extension context is still valid
+    try {
+      if (!chrome.runtime || !chrome.runtime.id) {
+        clearInterval(window.aiCompanionInterval);
+        window.aiCompanionInterval = null;
+        const existing = document.querySelector('ai-companion-widget');
+        if (existing) existing.remove();
+        return;
+      }
+    } catch (e) {
+      clearInterval(window.aiCompanionInterval);
+      window.aiCompanionInterval = null;
+      const existing = document.querySelector('ai-companion-widget');
+      if (existing) existing.remove();
+      return;
+    }
+
     const isProblemPage = window.location.pathname.includes('/problems/');
     if (!isProblemPage) {
       const existing = document.querySelector('ai-companion-widget');
@@ -457,6 +474,17 @@ function initializeWidget() {
 
   // --- MENTOR BLOCK TRIGGER ---
   shadow.getElementById('action-copilot').addEventListener('click', async () => {
+    // Check if extension context is valid
+    try {
+      if (!chrome.runtime || !chrome.runtime.id) {
+        alert("The AI Companion extension context was invalidated (likely due to a reload or update). Please refresh this browser tab to restart the companion.");
+        return;
+      }
+    } catch (e) {
+      alert("The AI Companion extension context was invalidated (likely due to a reload or update). Please refresh this browser tab to restart the companion.");
+      return;
+    }
+
     const btn = shadow.getElementById('action-copilot');
     const loader = shadow.getElementById('loader-copilot');
     const report = shadow.getElementById('report-copilot');
@@ -499,6 +527,17 @@ function initializeWidget() {
 
   // --- AUTOSOLVE BLOCK TRIGGER ---
   shadow.getElementById('action-autosolve').addEventListener('click', async () => {
+    // Check if extension context is valid
+    try {
+      if (!chrome.runtime || !chrome.runtime.id) {
+        alert("The AI Companion extension context was invalidated (likely due to a reload or update). Please refresh this browser tab to restart the companion.");
+        return;
+      }
+    } catch (e) {
+      alert("The AI Companion extension context was invalidated (likely due to a reload or update). Please refresh this browser tab to restart the companion.");
+      return;
+    }
+
     const btn = shadow.getElementById('action-autosolve');
     const loader = shadow.getElementById('loader-autosolve');
     const report = shadow.getElementById('report-autosolve');
