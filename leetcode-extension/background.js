@@ -124,21 +124,56 @@ async function fetchLeetCodeQuestion(titleSlug) {
   }
 }
 
-async function callGeminiAPI(apiKey, prompt) {
-  const endpoints = [
-    {
-      url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      label: 'Gemini 1.5 Flash (v1 Stable)'
-    },
-    {
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      label: 'Gemini 1.5 Flash (v1beta Beta)'
-    },
-    {
-      url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
-      label: 'Gemini Pro (v1 Legacy)'
+async function getAvailableModelsList(apiKey) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.models) {
+        return json.models
+          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => m.name.replace('models/', ''));
+      }
     }
-  ];
+  } catch (e) {
+    console.error('[AI Solver] Error listing models:', e);
+  }
+  return [];
+}
+
+async function callGeminiAPI(apiKey, prompt) {
+  // Query available models for this specific API key dynamically
+  const availableModels = await getAvailableModelsList(apiKey);
+  console.log('[AI Solver] Models available to this API key:', availableModels);
+
+  const endpoints = [];
+  
+  // 1. Add all models reported as available by their key first
+  for (const model of availableModels) {
+    endpoints.push({
+      url: `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+      label: `${model} (v1 Dynamic)`
+    });
+    endpoints.push({
+      url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      label: `${model} (v1beta Dynamic)`
+    });
+  }
+
+  // 2. Add standard fallbacks if not already present
+  const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+  for (const model of fallbackModels) {
+    if (!availableModels.includes(model)) {
+      endpoints.push({
+        url: `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
+        label: `${model} (v1 Stable Fallback)`
+      });
+      endpoints.push({
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        label: `${model} (v1beta Beta Fallback)`
+      });
+    }
+  }
 
   let lastError = null;
 
@@ -178,7 +213,8 @@ async function callGeminiAPI(apiKey, prompt) {
     }
   }
 
-  throw new Error(`Gemini API Error: ${lastError ? lastError.message : 'All endpoints failed.'}`);
+  const modelListText = availableModels.length > 0 ? availableModels.join(', ') : 'None detected';
+  throw new Error(`Gemini API Error: ${lastError ? lastError.message : 'All endpoints failed.'} (Available models for this key: ${modelListText})`);
 }
 
 function cleanHtml(html) {
