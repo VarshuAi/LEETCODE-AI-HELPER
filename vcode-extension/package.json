@@ -1,0 +1,90 @@
+{
+  "name": "vcode-companion",
+  "displayName": "VCode Companion",
+  "description": "Varshan's Custom VCode Environment: Carbon Slate Theme, Gemini AI Chat Sidebar, and Custom Welcome Page.",
+  "version": "1.0.0",
+  "publisher": "varshuai",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Themes",
+    "AI",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "themes": [
+      {
+        "label": "VCode Carbon Slate",
+        "uiTheme": "vs-dark",
+        "path": "./themes/vcode-carbon-slate.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vcode-sidebar",
+          "title": "VCode",
+          "icon": "media/vcode-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vcode-sidebar": [
+        {
+          "id": "vcode-gemini-chat",
+          "type": "webview",
+          "name": "VCode Gemini AI"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "vcode.openWelcome",
+        "title": "VCode: Open Welcome Page",
+        "category": "VCode"
+      },
+      {
+        "command": "vcode.configureApiKey",
+        "title": "VCode: Configure Gemini API Key",
+        "category": "VCode"
+      },
+      {
+        "command": "vcode.applyTheme",
+        "title": "VCode: Apply Carbon Slate Theme",
+        "category": "VCode"
+      }
+    ],
+    "configuration": {
+      "title": "VCode Settings",
+      "properties": {
+        "vcode.geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google Gemini API Key for VCode AI Chat Assistant.",
+          "scope": "application"
+        },
+        "vcode.geminiModel": {
+          "type": "string",
+          "default": "gemini-1.5-flash",
+          "enum": [
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-2.0-flash-exp",
+            "gemini-2.5-flash",
+            "gemini-2.5-pro"
+          ],
+          "description": "The Google Gemini model to use for chat interactions.",
+          "scope": "application"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0"
+  }
+}
