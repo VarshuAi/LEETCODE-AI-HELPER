@@ -31,7 +31,7 @@ class SidebarProvider {
                     await this._handleSendMessage(data.text, data.includeCode);
                     break;
                 case 'configureApiKey':
-                    vscode.commands.executeCommand('antigravity.configureApiKey');
+                    vscode.commands.executeCommand('vcode.configureApiKey');
                     break;
                 case 'insertCode':
                     this._insertCodeIntoEditor(data.code);
@@ -51,7 +51,7 @@ class SidebarProvider {
     async _handleSendMessage(userPrompt, includeCode) {
         if (!this._view) return;
 
-        const config = vscode.workspace.getConfiguration('antigravity');
+        const config = vscode.workspace.getConfiguration('vcode');
         const apiKey = config.get('geminiApiKey');
         const model = config.get('geminiModel') || 'gemini-3.5-flash';
 
@@ -96,8 +96,8 @@ class SidebarProvider {
     async _callGeminiApi(apiKey, model, prompt) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
-        // System instruction to ensure responses match Antigravity branding
-        const systemInstruction = "You are Antigravity, a powerful agentic AI coding assistant designed by the Google DeepMind team. You are pair programming with Varshan. Help him write elegant code, fix bugs, and structure projects. Be concise, expert-level, and provide clear code blocks.";
+        // System instruction to ensure responses match VCode branding and style
+        const systemInstruction = "You are VCode AI, a premium assistant built for Varshan. Be concise, highly professional, and provide clear code snippets. If providing code modifications, format them with markdown blocks.";
 
         const requestBody = {
             contents: [
@@ -170,7 +170,7 @@ class SidebarProvider {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Antigravity AI</title>
+    <title>VCode Gemini AI</title>
     <link rel="stylesheet" href="${cssUri}">
 </head>
 <body>
@@ -178,9 +178,9 @@ class SidebarProvider {
         <!-- Messages Area -->
         <div class="chat-messages" id="messages-list">
             <div class="message message-ai">
-                <div class="avatar">👾</div>
+                <div class="avatar">🤖</div>
                 <div class="msg-bubble">
-                    Hello Varshan! I am <strong>Antigravity</strong>, your agentic AI coding assistant. How can I help you program today?
+                    Hello Varshan! I am your <strong>VCode Gemini AI</strong> assistant. How can I help you program today?
                 </div>
             </div>
         </div>
@@ -201,7 +201,7 @@ class SidebarProvider {
                 </label>
             </div>
             <div class="input-row">
-                <textarea id="txt-prompt" placeholder="Ask Antigravity... (Ctrl+Enter to send)"></textarea>
+                <textarea id="txt-prompt" placeholder="Ask Gemini... (Ctrl+Enter to send)"></textarea>
                 <button class="send-btn" id="btn-send">
                     <svg viewBox="0 0 24 24" width="18" height="18">
                         <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
