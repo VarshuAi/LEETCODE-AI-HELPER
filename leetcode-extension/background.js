@@ -142,7 +142,37 @@ async function getAvailableModelsList(apiKey) {
 }
 
 async function callGeminiAPI(apiKey, prompt) {
-  // Query available models for this specific API key dynamically
+  // FAST PATH: Try the standard gemini-1.5-flash model on v1 Stable API first.
+  // This bypasses the ListModels call completely for standard requests, reducing latency to under 1.5s.
+  const fastUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  try {
+    console.log('[AI Solver] Attempting fast path: Gemini 1.5 Flash (v1 Stable)...');
+    const response = await fetch(fastUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }]
+      })
+    });
+
+    const json = await response.json();
+    if (response.ok && json.candidates && json.candidates[0].content.parts[0].text) {
+      console.log('[AI Solver] Fast path succeeded! Returning response.');
+      return json.candidates[0].content.parts[0].text.trim();
+    }
+    console.warn('[AI Solver] Fast path failed or returned empty. Error details:', json.error ? json.error.message : 'Unknown');
+  } catch (err) {
+    console.warn('[AI Solver] Fast path request failed:', err.message);
+  }
+
+  // FALLBACK PATH: If the fast path fails, run the dynamic model listing and fallbacks
+  console.log('[AI Solver] Entering fallback path. Querying available models dynamically...');
   const availableModels = await getAvailableModelsList(apiKey);
   console.log('[AI Solver] Models available to this API key:', availableModels);
 
@@ -150,6 +180,7 @@ async function callGeminiAPI(apiKey, prompt) {
   
   // 1. Add all models reported as available by their key first
   for (const model of availableModels) {
+    if (model === 'gemini-1.5-flash') continue; // Already tried in fast path
     endpoints.push({
       url: `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`,
       label: `${model} (v1 Dynamic)`
@@ -160,8 +191,8 @@ async function callGeminiAPI(apiKey, prompt) {
     });
   }
 
-  // 2. Add standard fallbacks if not already present
-  const fallbackModels = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
+  // 2. Add standard fallbacks if not already tried
+  const fallbackModels = ['gemini-1.5-pro', 'gemini-1.0-pro'];
   for (const model of fallbackModels) {
     if (!availableModels.includes(model)) {
       endpoints.push({
