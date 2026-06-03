@@ -1,0 +1,166 @@
+// background.js - Service Worker for LeetCode AI Companion
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'solve' || request.action === 'guide') {
+    handleRequest(request)
+      .then(result => sendResponse(result))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+    return true; // Keep message channel open for async response
+  }
+});
+
+async function handleRequest(request) {
+  // 1. Retrieve the Gemini API Key from storage
+  const storage = await chrome.storage.local.get(['gemini_api_key']);
+  const apiKey = storage.gemini_api_key;
+  if (!apiKey) {
+    throw new Error('API Key missing. Click the extension icon in your toolbar to configure your Gemini API Key.');
+  }
+
+  // 2. Fetch question details from LeetCode GraphQL
+  const question = await fetchLeetCodeQuestion(request.slug);
+  
+  // 3. Clean the HTML description to plain text
+  const cleanDesc = cleanHtml(question.content);
+
+  // 4. Find the matching starter code stub for their selected language
+  const targetSnippet = question.codeSnippets.find(
+    s => s.lang === request.lang || s.langSlug === request.lang.toLowerCase()
+  ) || question.codeSnippets[0];
+
+  const codeStub = targetSnippet ? targetSnippet.code : '';
+
+  // 5. Formulate prompt
+  let prompt = '';
+  if (request.action === 'solve') {
+    prompt = `
+    You are an elite software engineer and competitive programmer.
+    Your goal is to solve this LeetCode problem.
+
+    PROBLEM TITLE: ${question.title}
+    DIFFICULTY: ${question.difficulty}
+    DESCRIPTION:
+    ${cleanDesc}
+
+    STARTER CODE TEMPLATE:
+    \`\`\`${request.lang}
+    ${codeStub}
+    \`\`\`
+
+    INSTRUCTIONS:
+    1. Write the complete, high-performance production-grade solution.
+    2. Ensure it strictly fits into the starter template without changing class, function, or parameter names.
+    3. Include minimal, clean comments explaining critical logic segments.
+    4. DO NOT wrap the code in markdown blocks like \`\`\`${request.lang}.
+    5. Output ONLY the raw executable code that is ready to paste directly into the editor. No explanations, no markdown blocks, no prefix/suffix text.
+    `;
+  } else {
+    prompt = `
+    You are a supportive, friendly, and expert computer science professor and coding mentor.
+    Your goal is to guide the user to solve this LeetCode problem themselves.
+    DO NOT write the final complete solution code for them under any circumstance.
+
+    PROBLEM TITLE: ${question.title}
+    DIFFICULTY: ${question.difficulty}
+    DESCRIPTION:
+    ${cleanDesc}
+
+    USER'S CURRENT ACTIVE CODE:
+    \`\`\`${request.lang}
+    ${request.currentCode || '// Starter template / Empty code'}
+    \`\`\`
+
+    INSTRUCTIONS FOR YOUR FEEDBACK:
+    Provide a highly engaging, constructive review structured into these sections using simple HTML formatting:
+    
+    1. 🔍 <strong>Approach Check</strong>: Gently evaluate if their structural choice (e.g. Hashmap, two pointers) is heading in the right direction. Suggest alternative paths if they are stuck.
+    2. 🐛 <strong>Bug Hunt</strong>: Highlight any logical flaws, syntax errors, or missed edge cases in their current code. Do not give the corrected code, just explain the bug.
+    3. 💡 <strong>Next Steps & Hints</strong>: Provide 1 or 2 small, progressive hints to nudge them toward writing the next lines.
+    4. ⚡ <strong>Complexity Check</strong>: Summarize the space-time target (e.g., "We are aiming for O(N) time complexity").
+    
+    Keep your tone supportive, clean, and highly educational. Use concise bullet points. Avoid neon cyber formatting.
+    `;
+  }
+
+  // 6. Request Gemini 1.5 Flash API
+  const responseText = await callGeminiAPI(apiKey, prompt);
+  return { success: true, data: responseText };
+}
+
+async function fetchLeetCodeQuestion(titleSlug) {
+  const query = `
+    query questionData($titleSlug: String!) {
+      question(titleSlug: $titleSlug) {
+        title
+        difficulty
+        content
+        codeSnippets {
+          lang
+          langSlug
+          code
+        }
+      }
+    }
+  `;
+
+  const response = await fetch('https://leetcode.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Referer': 'https://leetcode.com'
+    },
+    body: JSON.stringify({ query, variables: { titleSlug } })
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to query LeetCode GraphQL endpoint.');
+  }
+
+  const json = await response.json();
+  if (json.data && json.data.question) {
+    return json.data.question;
+  } else {
+    throw new Error('Problem question not found or is private.');
+  }
+}
+
+async function callGeminiAPI(apiKey, prompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{
+          text: prompt
+        }]
+      }]
+    })
+  });
+
+  const json = await response.json();
+  
+  if (!response.ok) {
+    const errorDetails = json.error ? json.error.message : 'Unknown Google API error';
+    throw new Error(`Gemini API Error: ${errorDetails}`);
+  }
+
+  if (json.candidates && json.candidates[0].content.parts[0].text) {
+    return json.candidates[0].content.parts[0].text.trim();
+  } else {
+    throw new Error('Failed to parse response text from Gemini API candidates.');
+  }
+}
+
+function cleanHtml(html) {
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"');
+}
