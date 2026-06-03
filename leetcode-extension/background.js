@@ -125,34 +125,60 @@ async function fetchLeetCodeQuestion(titleSlug) {
 }
 
 async function callGeminiAPI(apiKey, prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
+  const endpoints = [
+    {
+      url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      label: 'Gemini 1.5 Flash (v1 Stable)'
     },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{
-          text: prompt
-        }]
-      }]
-    })
-  });
+    {
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      label: 'Gemini 1.5 Flash (v1beta Beta)'
+    },
+    {
+      url: `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`,
+      label: 'Gemini Pro (v1 Legacy)'
+    }
+  ];
 
-  const json = await response.json();
-  
-  if (!response.ok) {
-    const errorDetails = json.error ? json.error.message : 'Unknown Google API error';
-    throw new Error(`Gemini API Error: ${errorDetails}`);
+  let lastError = null;
+
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`[AI Solver] Trying API request using endpoint: ${endpoint.label}`);
+      const response = await fetch(endpoint.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }]
+        })
+      });
+
+      const json = await response.json();
+      
+      if (!response.ok) {
+        const errorDetails = json.error ? json.error.message : 'Unknown Google API error';
+        throw new Error(`API Error details: ${errorDetails}`);
+      }
+
+      if (json.candidates && json.candidates[0].content.parts[0].text) {
+        console.log(`[AI Solver] API request succeeded using endpoint: ${endpoint.label}`);
+        return json.candidates[0].content.parts[0].text.trim();
+      } else {
+        throw new Error('Failed to parse response text from candidates.');
+      }
+    } catch (err) {
+      console.warn(`[AI Solver] Request failed on endpoint ${endpoint.label}:`, err.message);
+      lastError = err;
+    }
   }
 
-  if (json.candidates && json.candidates[0].content.parts[0].text) {
-    return json.candidates[0].content.parts[0].text.trim();
-  } else {
-    throw new Error('Failed to parse response text from Gemini API candidates.');
-  }
+  throw new Error(`Gemini API Error: ${lastError ? lastError.message : 'All endpoints failed.'}`);
 }
 
 function cleanHtml(html) {
