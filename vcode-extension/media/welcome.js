@@ -11,6 +11,13 @@
         });
     }
 
+    const macThemeBtn = document.getElementById('btn-mac-theme');
+    if (macThemeBtn) {
+        macThemeBtn.addEventListener('click', () => {
+            vscode.postMessage({ command: 'applyMacTheme' });
+        });
+    }
+
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             vscode.postMessage({ command: 'openChat' });

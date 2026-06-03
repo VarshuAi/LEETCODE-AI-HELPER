@@ -39,6 +39,9 @@ class WelcomeProvider {
                 case 'applyTheme':
                     vscode.commands.executeCommand('vcode.applyTheme');
                     break;
+                case 'applyMacTheme':
+                    vscode.commands.executeCommand('vcode.applyMacTheme');
+                    break;
                 case 'configureApiKey':
                     vscode.commands.executeCommand('vcode.configureApiKey');
                     break;
@@ -95,9 +98,10 @@ class WelcomeProvider {
                 <!-- Theme Card -->
                 <div class="card card-theme">
                     <div class="card-icon">🖤</div>
-                    <h2>Carbon Slate Theme</h2>
-                    <p>Activate the premium, high-contrast matte dark theme crafted with tailored slate tokens.</p>
-                    <button class="btn btn-primary" id="btn-theme">Apply Theme</button>
+                    <h2>Workspace Themes</h2>
+                    <p>Apply either the premium Carbon Slate theme, or the macOS Dark style theme with one click.</p>
+                    <button class="btn btn-primary" id="btn-theme" style="margin-bottom: 8px;">Carbon Slate Theme</button>
+                    <button class="btn btn-secondary" id="btn-mac-theme">macOS Dark Theme</button>
                 </div>
 
                 <!-- AI Sidebar Card -->

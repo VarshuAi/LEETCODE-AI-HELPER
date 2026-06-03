@@ -51,6 +51,14 @@ function activate(context) {
     });
     context.subscriptions.push(applyThemeCmd);
 
+    // Command: Apply macOS Dark Theme
+    let applyMacThemeCmd = vscode.commands.registerCommand('vcode.applyMacTheme', async () => {
+        const workbenchConfig = vscode.workspace.getConfiguration('workbench');
+        await workbenchConfig.update('colorTheme', 'VCode macOS Dark', vscode.ConfigurationTarget.Global);
+        vscode.window.showInformationMessage('Welcome to VCode! macOS Dark Theme applied successfully.');
+    });
+    context.subscriptions.push(applyMacThemeCmd);
+
     // Automatically trigger Welcome Screen on first startup
     const welcomeStateKey = 'vcode.welcomeScreenShown';
     const hasWelcomeBeenShown = context.globalState.get(welcomeStateKey);

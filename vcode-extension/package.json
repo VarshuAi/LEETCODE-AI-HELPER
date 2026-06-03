@@ -1,7 +1,7 @@
 {
   "name": "vcode-companion",
   "displayName": "VCode Companion",
-  "description": "Varshan's Custom VCode Environment: Carbon Slate Theme, Gemini AI Chat Sidebar, and Custom Welcome Page.",
+  "description": "Varshan's Custom VCode Environment: macOS/Carbon Themes, Antigravity AI Chat Sidebar, and Custom Welcome Page.",
   "version": "1.0.0",
   "publisher": "varshuai",
   "engines": {
@@ -22,13 +22,18 @@
         "label": "VCode Carbon Slate",
         "uiTheme": "vs-dark",
         "path": "./themes/vcode-carbon-slate.json"
+      },
+      {
+        "label": "VCode macOS Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/vcode-macos-dark.json"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
           "id": "vcode-sidebar",
-          "title": "VCode",
+          "title": "Antigravity AI",
           "icon": "media/vcode-icon.svg"
         }
       ]
@@ -38,7 +43,7 @@
         {
           "id": "vcode-gemini-chat",
           "type": "webview",
-          "name": "VCode Gemini AI"
+          "name": "Antigravity AI Assistant"
         }
       ]
     },
@@ -57,6 +62,11 @@
         "command": "vcode.applyTheme",
         "title": "VCode: Apply Carbon Slate Theme",
         "category": "VCode"
+      },
+      {
+        "command": "vcode.applyMacTheme",
+        "title": "VCode: Apply macOS Dark Theme",
+        "category": "VCode"
       }
     ],
     "configuration": {
@@ -65,7 +75,7 @@
         "vcode.geminiApiKey": {
           "type": "string",
           "default": "",
-          "description": "Your Google Gemini API Key for VCode AI Chat Assistant.",
+          "description": "Your Google Gemini API Key for Antigravity AI Chat Assistant.",
           "scope": "application"
         },
         "vcode.geminiModel": {

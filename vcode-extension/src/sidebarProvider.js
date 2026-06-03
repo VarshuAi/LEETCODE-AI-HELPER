@@ -96,8 +96,8 @@ class SidebarProvider {
     async _callGeminiApi(apiKey, model, prompt) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
-        // System instruction to ensure responses match VCode branding and style
-        const systemInstruction = "You are VCode AI, a premium assistant built for Varshan. Be concise, highly professional, and provide clear code snippets. If providing code modifications, format them with markdown blocks.";
+        // System instruction to ensure responses match Antigravity branding
+        const systemInstruction = "You are Antigravity, a powerful agentic AI coding assistant designed by the Google DeepMind team. You are pair programming with Varshan. Help him write elegant code, fix bugs, and structure projects. Be concise, expert-level, and provide clear code blocks.";
 
         const requestBody = {
             contents: [
@@ -178,9 +178,9 @@ class SidebarProvider {
         <!-- Messages Area -->
         <div class="chat-messages" id="messages-list">
             <div class="message message-ai">
-                <div class="avatar">🤖</div>
+                <div class="avatar">👾</div>
                 <div class="msg-bubble">
-                    Hello Varshan! I am your <strong>VCode Gemini AI</strong> assistant. How can I help you program today?
+                    Hello Varshan! I am <strong>Antigravity</strong>, your agentic AI coding assistant. How can I help you program today?
                 </div>
             </div>
         </div>

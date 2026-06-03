@@ -77,7 +77,7 @@
 
         const avatarDiv = document.createElement('div');
         avatarDiv.className = 'avatar';
-        avatarDiv.textContent = sender === 'user' ? '👤' : '🤖';
+        avatarDiv.textContent = sender === 'user' ? '👤' : '👾';
 
         const bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'msg-bubble';
@@ -123,7 +123,7 @@
 
         const avatarDiv = document.createElement('div');
         avatarDiv.className = 'avatar';
-        avatarDiv.textContent = '🤖';
+        avatarDiv.textContent = '👾';
 
         const bubbleDiv = document.createElement('div');
         bubbleDiv.className = 'msg-bubble';
