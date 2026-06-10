@@ -150,40 +150,51 @@ async function fetchDailyQuestion() {
 
 // Call Google Gemini API to get code solution
 async function queryGemini(prompt) {
-    const model = "gemini-3.5-flash"; // default high-speed model
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+    const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+    let lastError = null;
 
-    const requestBody = {
-        contents: [
-            {
-                parts: [
-                    { text: prompt }
+    for (const model of models) {
+        try {
+            log.info(`Querying model ${model}...`);
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
+
+            const requestBody = {
+                contents: [
+                    {
+                        parts: [
+                            { text: prompt }
+                        ]
+                    }
                 ]
+            };
+
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                const errMsg = errData?.error?.message || `HTTP error! status: ${res.status}`;
+                throw new Error(errMsg);
             }
-        ]
-    };
 
-    const res = await fetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(requestBody)
-    });
+            const data = await res.json();
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        const errMsg = errData?.error?.message || `HTTP error! status: ${res.status}`;
-        throw new Error(`Gemini API Error: ${errMsg}`);
+            if (!rawText) {
+                throw new Error("No response text returned from Gemini API.");
+            }
+
+            return cleanCodeResponse(rawText);
+        } catch (err) {
+            log.warn(`Model ${model} failed: ${err.message || err}`);
+            lastError = err;
+        }
     }
 
-    const data = await res.json();
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawText) {
-        throw new Error("No response text returned from Gemini API.");
-    }
-
-    // Extract the code block inside markdown code tags
-    return cleanCodeResponse(rawText);
+    throw new Error(`All Gemini models failed. Last error: ${lastError.message || lastError}`);
 }
 
 // Helper to remove markdown wrap tags from Gemini outputs
@@ -286,8 +297,8 @@ async function submitSolution(titleSlug, questionId, code) {
 async function checkSubmissionStatus(titleSlug, submissionId) {
     const checkUrl = `https://leetcode.com/submissions/detail/${submissionId}/check/`;
     
-    // Max polling attempts
-    const maxPolls = 15;
+    // Max polling attempts (increased to 35 to allow up to 50s for slow queues)
+    const maxPolls = 35;
     for (let i = 0; i < maxPolls; i++) {
         // Wait 1.5s between polls
         await new Promise(r => setTimeout(r, 1500));
