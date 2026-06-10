@@ -6,6 +6,9 @@ on:
     - cron: '0 5 * * *'
   workflow_dispatch: # Allows you to manually trigger the run from your GitHub browser page
 
+permissions:
+  contents: write # Grants the workflow permissions to commit and push back to repository
+
 jobs:
   solve:
     runs-on: ubuntu-latest
@@ -28,3 +31,17 @@ jobs:
       run: |
         cd leetcode-streak-solver
         node solve.js
+
+    - name: Commit and Push solution code
+      run: |
+        git config --global user.name "VarshuAi"
+        git config --global user.email "gowdavarshan466@gmail.com"
+        git add leetcode-streak-solver/solutions/
+        
+        # Check if there are new files added to stage
+        if ! git diff --cached --quiet; then
+          git commit -m "docs: auto-add solution for today's LeetCode challenge"
+          git push
+        else
+          echo "No new solutions to commit today."
+        fi

@@ -89,6 +89,17 @@ async function main() {
 
             if (result.status_msg === "Accepted") {
                 log.success(`Accepted! Streak extended successfully! (${result.total_correct}/${result.total_testcases} cases passed)`);
+                
+                // Save solution file locally for GitHub publishing
+                const solutionsDir = path.join(__dirname, 'solutions');
+                if (!fs.existsSync(solutionsDir)) {
+                    fs.mkdirSync(solutionsDir);
+                }
+                const ext = langSlug === 'python3' ? 'py' : langSlug === 'javascript' ? 'js' : langSlug === 'cpp' ? 'cpp' : langSlug === 'java' ? 'java' : 'txt';
+                const safeTitle = dailyQuestion.title.replace(/[^a-zA-Z0-9]/g, '_');
+                const filePath = path.join(solutionsDir, `${safeTitle}.${ext}`);
+                fs.writeFileSync(filePath, currentCode);
+                log.success(`Saved solution file: ${filePath}`);
                 return;
             } else {
                 log.warn(`Submission failed with status: ${result.status_msg}`);
@@ -150,7 +161,7 @@ async function fetchDailyQuestion() {
 
 // Call Google Gemini API to get code solution
 async function queryGemini(prompt) {
-    const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+    const models = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash-latest"];
     let lastError = null;
 
     for (const model of models) {
