@@ -1,0 +1,30 @@
+name: Auto-Solve LeetCode Daily Challenge
+
+on:
+  schedule:
+    # Runs daily at 05:00 AM UTC (10:30 AM Indian Standard Time)
+    - cron: '0 5 * * *'
+  workflow_dispatch: # Allows you to manually trigger the run from your GitHub browser page
+
+jobs:
+  solve:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Run solver script
+      env:
+        LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+        LEETCODE_CSRFTOKEN: ${{ secrets.LEETCODE_CSRFTOKEN }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        LEETCODE_LANGUAGE: 'python3'
+      run: |
+        cd leetcode-streak-solver
+        node solve.js
